@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"sync"
 )
 
 func main() {
-	//var wg sync.WaitGroup
 	var fns []func() error
 	for i := 0; i < 1000; i++ {
 		fns = append(fns, hello)
@@ -19,16 +19,28 @@ func main() {
 }
 
 func Execute(tasks []func() error, E int) error {
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+
 	var counter = 0
 	for _, fn := range tasks {
+		wg.Add(1)
+
 		if counter >= E {
-			return errors.New("превышено количество ошибок")
+			return errors.New("exceeded the number of errors")
 		}
-		err := fn()
-		if err != nil {
-			counter++
-		}
+		fn := fn
+		go func() {
+			defer wg.Done()
+			mu.Lock()
+			defer mu.Unlock()
+			err := fn()
+			if err != nil {
+				counter++
+			}
+		}()
 	}
+	wg.Wait()
 	return nil
 }
 
