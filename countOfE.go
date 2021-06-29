@@ -22,20 +22,21 @@ func Execute(tasks []func() error, E int) error {
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
-	var counter = 0
+	var counter int
 	for _, fn := range tasks {
 		wg.Add(1)
-
+		mu.Lock()
 		if counter >= E {
 			return errors.New("exceeded the number of errors")
 		}
+		mu.Unlock()
 		fn := fn
 		go func() {
-			defer wg.Done()
-			mu.Lock()
-			defer mu.Unlock()
-			err := fn()
+			var err = fn()
 			if err != nil {
+				defer wg.Done()
+				mu.Lock()
+				defer mu.Unlock()
 				counter++
 			}
 		}()
