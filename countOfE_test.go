@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -16,12 +15,12 @@ func CountOfE(t *testing.T) {
 	}
 	err := Execute(fns, 10)
 	if err != nil {
-		fmt.Println(err)
+		t.Error(err)
 	}
 
 	err2 := Execute(fns2, 10)
 	if err2 != nil {
-		fmt.Println(err)
+		t.Error(err)
 	}
 
 }
